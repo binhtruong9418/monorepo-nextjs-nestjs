@@ -4,9 +4,7 @@
 **/dist
 **/coverage
 **/*.log
-**/.env
-**/.env.*
-!**/.env.example
+
 
 # Root node_modules and all nested ones
 node_modules
