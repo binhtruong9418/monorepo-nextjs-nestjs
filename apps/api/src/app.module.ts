@@ -1,13 +1,24 @@
-import { Module } from '@nestjs/common';
-
-import { LinksModule } from './links/links.module';
-
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { SharedModule } from './shared/modules/shared.module';
+import { MODULES } from './modules';
+import { LoggerMiddleware } from './shared/middlewares/logger.middleware';
+import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 
 @Module({
-  imports: [LinksModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    SharedModule,
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ...MODULES,
+  ],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

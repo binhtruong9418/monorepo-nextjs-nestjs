@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "pnpm build --watch",
+    "dev": "yarn build --watch",
     "build": "tsc -b -v",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
   },
@@ -21,13 +21,20 @@
       "import": "./dist/entry.js",
       "require": "./dist/entry.js"
     },
+    "./fe": {
+      "import": "./dist/fe-entry.js",
+      "require": "./dist/fe-entry.js"
+    },
     "./*": {
       "import": "./dist/*.js",
       "require": "./dist/*.js"
     }
   },
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "typeorm": "^0.3.24"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

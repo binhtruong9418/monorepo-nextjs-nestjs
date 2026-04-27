@@ -22,6 +22,9 @@
   "engines": {
     "node": ">=18"
   },
+  "resolutions": {
+    "typeorm": "0.3.24"
+  },
   "packageManager": "yarn@1.22.22",
   "workspaces": [
     "apps/*",
