@@ -1,0 +1,23 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Write env files
+        run: |
+          echo "${{ vars.API_ENV }}" > apps/api/.env
+          echo "${{ vars.WEB_ENV }}" > apps/web/.env
+
+      - name: Build and deploy containers
+        run: docker compose -f docker-compose.yml up -d --build
+
+      - name: Remove unused Docker images
+        run: docker image prune -f

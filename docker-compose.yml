@@ -1,0 +1,93 @@
+services:
+  # ── Infrastructure ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: webcommerce-postgres
+    command: -p ${DB_PORT:-5432}
+    ports:
+      - ${DB_PORT:-5432}:${DB_PORT:-5432}
+    volumes:
+      - WebcommercePostgresData:/var/lib/postgresql/data
+    env_file: ./apps/api/.env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-webcommerce}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-webcommerce} -p ${DB_PORT:-5432}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+    networks:
+      - WebcommerceNetwork
+
+  redis:
+    image: redis:7-alpine
+    container_name: webcommerce-redis
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    volumes:
+      - WebcommerceRedisData:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: always
+    networks:
+      - WebcommerceNetwork
+
+  # ── Backend API ──
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: webcommerce-api
+    ports:
+      - ${PORT:-5000}:${PORT:-5000}
+    env_file: ./apps/api/.env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        node ./node_modules/typeorm/cli.js migration:run -d ./apps/api/dist/data-source.js && node apps/api/dist/main
+    networks:
+      - WebcommerceNetwork
+
+  # ── Frontend ──
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: webcommerce-web
+    ports:
+      - ${WEB_PORT:-3001}:${WEB_PORT:-3001}
+    env_file: ./apps/web/.env
+    environment:
+      # Client uses relative /api/* → Next.js rewrites proxy to api:5000 internally.
+      NEXT_PUBLIC_API_URL: http://api:${PORT:-5000}
+    restart: always
+    depends_on:
+      - api
+    networks:
+      - WebcommerceNetwork
+
+networks:
+  WebcommerceNetwork:
+    name: WebcommerceNetwork
+
+volumes:
+  WebcommercePostgresData:
+  WebcommerceRedisData:

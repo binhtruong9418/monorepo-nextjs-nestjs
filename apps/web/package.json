@@ -11,19 +11,32 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.10.0",
+    "@repo/api": "*",
     "@repo/ui": "*",
+    "@tanstack/react-query": "^5.75.2",
+    "axios": "^1.9.0",
+    "js-cookie": "^3.0.5",
     "next": "16.2.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.56.0",
+    "zod": "^3.25.20",
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
-    "@repo/api": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@tanstack/react-query-devtools": "^5.75.2",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
+    "@svgr/webpack": "^8.1.0",
     "eslint": "^9.31.0",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^4.2.4",
     "typescript": "5.8.2"
   }
 }

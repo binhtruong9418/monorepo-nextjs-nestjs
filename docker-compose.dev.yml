@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: webcommerce-postgres
+    command: -p ${DB_PORT:-5432}
+    ports:
+      - ${DB_PORT:-5432}:${DB_PORT:-5432}
+    volumes:
+      - WebcommercePostgresData:/var/lib/postgresql/data
+    env_file: ./apps/api/.env
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-webcommerce}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-webcommerce} -p ${DB_PORT:-5432}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - WebcommerceNetwork
+
+  redis:
+    image: redis:7-alpine
+    container_name: webcommerce-redis
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    volumes:
+      - WebcommerceRedisData:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - WebcommerceNetwork
+
+networks:
+  WebcommerceNetwork:
+    name: WebcommerceNetwork
+
+volumes:
+  WebcommercePostgresData:
+  WebcommerceRedisData:
